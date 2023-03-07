@@ -1,6 +1,8 @@
 
 import methods.MethodOfHalfDivision
 import methods.MethodOfNewton
+import methods.MethodOfSimpleIterations
+import methods.SystemOfEquations
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.FileReader
@@ -13,17 +15,38 @@ object CLI {
         1 to Equation("x^2 + 2x + 1 = 0", fun(x: Double) = x * x + 2 * x + 1, listOf()),
         2 to Equation("x^3 - x + 4 = 0", fun(x: Double) = x * x * x - x + 4, listOf())
     )
+    private val mapOfMethods = mapOf(
+        1 to "Метод половинного деления",
+        2 to "Метод Ньютона",
+        3 to "Метод простых итераций"
+    )
 
-    private val mapOfMethods = mapOf(1 to "Метод половинного деления", 2 to "Метод Ньютона")
+    private val mapOfSystemEquations = mapOf(
+        1 to SystemOfEquations(
+            "",
+            fun(x: Double) = x * x + 2 * x + 1,
+            fun(x: Double) = x * x + 2 * x + 1,
+            listOf<Double>() to listOf()
+        )
+    )
+
     private lateinit var input: () -> String
-    private lateinit var output: (x: String) -> Unit
-    private val br = BufferedReader(FileReader("src/files/task1.txt"))
-    private val bw = BufferedWriter(FileWriter("src/files/task1-result.txt"))
+    private val br = BufferedReader(FileReader("src/files/task3/task3.txt"))
+    private val bw = BufferedWriter(FileWriter("src/files/task3/task3-result.txt"))
     private var visible = true
+    private var q: Double? = null
 
 
     fun doMethod(){
         askInputOption()
+        when(askKindOfEquation()){
+            1 -> solveEquation()
+
+            else -> solveSystemOfEquations()
+        }
+    }
+
+    private fun solveEquation(){
         val indexOfMethod = askMethod()
         val equation = askEquation()
         val isolation = askRootIsolation()
@@ -32,14 +55,36 @@ object CLI {
         when(indexOfMethod){
             1 -> MethodOfHalfDivision.solve(equation, isolation, accuracy)
             2 -> MethodOfNewton.solve(equation, isolation, accuracy)
+            3 -> {
+                q = askLipschitzCoefficient()
+                MethodOfSimpleIterations.solve(equation, isolation, accuracy)
+            }
         }
+
+    }
+
+    private fun solveSystemOfEquations(){
+        val equation = askSystemOfEquations()
+    }
+
+    private fun askKindOfEquation(): Int{
+        while (true){
+            ask("1) Решить нелинейное уравнение\n")
+            ask("2) Решить систему нелинейных уравнений\n")
+            ask("Выберете подходящий для вас пункт: ")
+            val index = input().toIntOrNull()
+            if(index is Int && index in 1..2){
+                return index
+            }
+        }
+
     }
 
     private fun askInputOption() {
         print("Прочитать данные из файла? Д/н ")
         val str = readln()
-        input = when (str.uppercase()) {
-            "Д", "\n" -> {
+        input = when (str.lowercase()) {
+            "д", "\n", "l" -> {
                 visible = false
                 { br.readLine() }
             }
@@ -51,19 +96,38 @@ object CLI {
         }
     }
 
-   fun printResult(x: Double, value: Double, numberOfIterations: Int) {
+   fun printResult(x: Double, value: Double, cntOfIterations: Int) {
         print("Записать результат работы программы в файл? Д/н ")
         val str = readln()
-         when (str.uppercase()) {
-            "Д", "\n" -> {
-                bw.write("Корень уравнения: $x\nЗначение функции в корне: $value\nЧисло итераций: $numberOfIterations")
+         when (str.lowercase()) {
+             "д", "\n", "l" -> {
+                bw.write("Корень уравнения: $x\nЗначение функции в корне: $value\nЧисло итераций: $cntOfIterations")
+                bw.flush()
             }
 
             else -> {
-                println("Корень уравнения: $x\nЗначение функции в корне: $value\nЧисло итераций: $numberOfIterations")
-
+                println("Корень уравнения: $x\nЗначение функции в корне: $value\nЧисло итераций: $cntOfIterations")
             }
         }
+    }
+
+    private fun askLipschitzCoefficient(): Double{
+        while(true) {
+            ask("Введите коэффициент Липшица: ")
+            val q = input().toDoubleOrNull()
+            if(q is Double && q > 0.0 && q < 1.0) return q;
+            println("Коэффициент Липшица должен быть представлен числом и быть в промежутке (0, 1)")
+        }
+
+    }
+
+    private fun askSystemOfEquations(): SystemOfEquations{
+        mapOfSystemEquations.forEach {
+            ask("${it.key}) ${it.value.getExp()}\n")
+        }
+        ask("Напишите номер системы уравнений, ответ к которой вы хотите увидеть: ")
+
+        return mapOfSystemEquations[askToChoose(mapOfSystemEquations.size)]!!
     }
 
 
@@ -118,5 +182,7 @@ object CLI {
     private fun ask(text: String){
         if(visible) print(text)
     }
+
+    fun getQ() = q!!
 }
 
