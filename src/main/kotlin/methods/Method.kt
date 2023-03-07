@@ -30,6 +30,34 @@ interface Method {
       }
    }
 
+   fun checkNumberOfRoots(function: DoubleFunction<Double>, isolation: Pair<Double, Double>) {
+      var (a, b) = isolation
+      val step = (b - a) / 100
+      var cnt = 0
+      val d = derive(function)
+      var sign = d.apply(a) >= 0
+      while (a <= b) {
+         if ((d.apply(a) >= 0) != sign) {
+            cnt++
+            sign = !sign
+         }
+         a+=step
+      }
+
+      when (cnt) {
+         0 -> println("На отрезке существует 1 корень")
+         1 -> {
+            println("На отрезке не существует корней")
+            exitProcess(1)
+         }
+
+         else -> {
+            println("На отрезке больше 1го корня")
+            exitProcess(1)
+         }
+   }
+   }
+
 
    fun showGraph(function: DoubleFunction<Double>, isolation: Pair<Double, Double>){
       val cntOfRepeat = 500;

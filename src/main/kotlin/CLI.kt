@@ -2,7 +2,6 @@
 import methods.MethodOfHalfDivision
 import methods.MethodOfNewton
 import methods.MethodOfSimpleIterations
-import methods.SystemOfEquations
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.FileReader
@@ -121,7 +120,7 @@ object CLI {
 
     }
 
-    private fun askSystemOfEquations(): SystemOfEquations{
+    private fun askSystemOfEquations(): SystemOfEquations {
         mapOfSystemEquations.forEach {
             ask("${it.key}) ${it.value.getExp()}\n")
         }

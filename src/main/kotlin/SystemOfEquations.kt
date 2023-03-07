@@ -1,5 +1,3 @@
-package methods
-
 import java.util.function.DoubleFunction
 
 data class SystemOfEquations(
