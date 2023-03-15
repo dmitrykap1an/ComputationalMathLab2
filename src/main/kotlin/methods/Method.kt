@@ -1,6 +1,6 @@
 package methods
 
-import Equation
+import utils.Equation
 import org.jetbrains.letsPlot.geom.geomArea
 import org.jetbrains.letsPlot.letsPlot
 import java.util.function.DoubleFunction
@@ -10,34 +10,31 @@ import kotlin.system.exitProcess
 interface Method {
    private val dx: Double
       get() = 0.000001
-   fun solve(equation: Equation,isolation: Pair<Double, Double>, accuracy: Double, );
+   fun solve(equation: Equation, isolation: Pair<Double, Double>, accuracy: Double, );
 
-   fun derive(f: DoubleFunction<Double>): DoubleFunction<Double> {
-      return DoubleFunction { x: Double -> (f.apply(x + dx) - f.apply(x)) / dx}
+   fun derive(f: (Double) -> Double): (Double) -> Double{
+      return { x: Double -> (f(x + dx) - f(x)) / dx}
    }
 
-   fun getTangent(f: DoubleFunction<Double>, x0: Double): DoubleFunction<Double>{
-      return DoubleFunction{ x: Double -> f.apply(x0) + derive(f).apply(x0) * (x - x0)}
-   }
 
-   fun checkConvergence(function: DoubleFunction<Double> , isolation: Pair<Double, Double>){
-      val d = derive(function)
+   fun checkConvergence(f: (Double) -> Double , isolation: Pair<Double, Double>){
+      val d = derive(f)
       val (a, b) = isolation
-      if(!(function.apply(isolation.first) * function.apply(isolation.second) <= 0 &&
-                 d.apply(isolation.first) * d.apply(isolation.second) > 0)) {
+      if(!(f(isolation.first) * f(isolation.second) <= 0 &&
+                 d(isolation.first) * d(isolation.second) > 0)) {
          println("Не выполняется достаточное условие единственности корня на отрезке [$a,$b]")
          exitProcess(1)
       }
    }
 
-   fun checkNumberOfRoots(function: DoubleFunction<Double>, isolation: Pair<Double, Double>) {
+   fun checkNumberOfRoots(f: (Double) -> Double, isolation: Pair<Double, Double>) {
       var (a, b) = isolation
       val step = (b - a) / 100
       var cnt = 0
-      val d = derive(function)
-      var sign = d.apply(a) >= 0
+      val d = derive(f)
+      var sign = d(a) >= 0
       while (a <= b) {
-         if ((d.apply(a) >= 0) != sign) {
+         if ((d(a) >= 0) != sign) {
             cnt++
             sign = !sign
          }
